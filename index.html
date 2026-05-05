@@ -37,7 +37,6 @@
             overflow: hidden;
         }
 
-        /* 阶段指示器 */
         .stage-indicator {
             display: flex;
             justify-content: center;
@@ -67,7 +66,6 @@
             letter-spacing: 0.3px;
         }
 
-        /* 倒计时显示 */
         .countdown-area {
             text-align: center;
             margin-bottom: 14px;
@@ -191,7 +189,6 @@
             box-shadow: none;
         }
 
-        /* 结果卡片区域 */
         .result-area {
             display: none;
             margin-top: 12px;
@@ -206,12 +203,36 @@
             border: 1px solid rgba(195, 211, 242, 0.5);
             position: relative;
         }
-        .card-emoji-big {
-            font-size: 76px;
-            margin-bottom: 4px;
+        .card-fusion {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .card-fusion-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .card-fusion-emoji {
+            font-size: 50px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        .card-fusion-trait {
+            font-size: 17px;
+            font-weight: 800;
+            color: #1e2e4f;
+        }
+        .card-fusion-x {
+            font-size: 28px;
+            font-weight: 800;
+            color: #8899c0;
+            margin: 0 4px;
         }
         .card-name {
-            font-size: 23px;
+            font-size: 22px;
             font-weight: 800;
             color: #1e2e4f;
             margin-bottom: 4px;
@@ -234,13 +255,14 @@
             padding: 0 6px;
         }
         .card-journey {
-            font-size: 12px;
+            font-size: 11px;
             color: #7b89a2;
             margin-top: 10px;
             background: #f7f9fe;
             border-radius: 18px;
             padding: 6px 14px;
             display: inline-block;
+            line-height: 1.5;
         }
         .card-footer {
             font-size: 12px;
@@ -290,34 +312,27 @@
 </head>
 <body>
     <div class="container" id="appContainer">
-        <!-- 阶段指示器 -->
         <div class="stage-indicator" id="stageIndicator">
             <span class="stage-dot active" id="dot1"></span>
             <span class="stage-dot" id="dot2"></span>
         </div>
         <div class="stage-label" id="stageLabel">第一阶段 · 选择你最心动的特质</div>
-
-        <!-- 倒计时 -->
         <div class="countdown-area" id="countdownArea">
             <span class="countdown-number" id="countdownNumber">15</span>
         </div>
 
-        <!-- 标题 -->
         <div class="title">✨ 教学风格罗盘</div>
         <div class="subtitle">预见未来的你<br>请凭直觉，快速选择</div>
 
-        <!-- 风格卡片网格 -->
         <div class="grid" id="styleGrid"></div>
 
-        <!-- 生成按钮（第二阶段才显示） -->
         <button class="btn-generate hidden" id="generateBtn">🔮 生成我的预判卡</button>
         <div class="tip" id="bottomTip">⏳ 请在倒计时结束前做出选择</div>
 
-        <!-- 结果区域（初始隐藏） -->
         <div class="result-area" id="resultArea">
             <div class="preview-card" id="captureCard">
-                <div class="card-emoji-big" id="cardEmoji"></div>
-                <div class="card-name" id="cardTrait"></div>
+                <!-- 融合展示区：两个阶段的选择平等展现 -->
+                <div class="card-fusion" id="cardFusion"></div>
                 <div class="card-nickname" id="cardNickname"></div>
                 <div class="card-desc" id="cardDesc"></div>
                 <div class="card-journey" id="cardJourney"></div>
@@ -333,14 +348,12 @@
 
     <script>
         (function() {
-            // 第一批
             const batch1 = [
                 { trait: '逻辑严密', animal: '🦉', desc: '你或许会成长为一名课程架构大师，你的课堂将如精密仪器，环环相扣。' },
                 { trait: '激情澎湃', animal: '🦁', desc: '你或许会成长为一名课堂气氛点燃者，用热情感染每一个求知的心灵。' },
                 { trait: '幽默风趣', animal: '🐒', desc: '你或许会成长为一名课堂气氛魔法师，让知识在欢笑中悄然扎根。' },
                 { trait: '温柔耐心', animal: '🐨', desc: '你或许会成长为一名学生信赖的倾听者，用春风化雨的方式滋润成长。' }
             ];
-            // 第二批
             const batch2 = [
                 { trait: '技术达人', animal: '🐬', desc: '你或许会成长为一名智慧教学先行者，用科技为教育插上翅膀。' },
                 { trait: '案例大王', animal: '🐘', desc: '你或许会成长为一名故事收藏家，让每一个理论在实践中绽放光彩。' },
@@ -359,8 +372,7 @@
             const dot1 = document.getElementById('dot1');
             const dot2 = document.getElementById('dot2');
             const resultArea = document.getElementById('resultArea');
-            const cardEmoji = document.getElementById('cardEmoji');
-            const cardTrait = document.getElementById('cardTrait');
+            const cardFusion = document.getElementById('cardFusion');
             const cardNickname = document.getElementById('cardNickname');
             const cardDesc = document.getElementById('cardDesc');
             const cardJourney = document.getElementById('cardJourney');
@@ -397,6 +409,7 @@
                 timeLeft = 15;
                 countdownNumber.textContent = timeLeft;
                 countdownNumber.classList.remove('urgent');
+                if (countdownTimer) clearInterval(countdownTimer);
                 countdownTimer = setInterval(() => {
                     timeLeft--;
                     countdownNumber.textContent = timeLeft;
@@ -450,7 +463,6 @@
                 stageLabel.textContent = '第二阶段 · 再次选择你的特质';
                 bottomTip.textContent = '⏳ 请在倒计时结束前做出选择';
                 renderBatch(batch2);
-                if (countdownTimer) clearInterval(countdownTimer);
                 startCountdown();
                 generateBtn.classList.add('hidden');
             }
@@ -472,14 +484,32 @@
 
             function generateResult() {
                 if (!selectedBatch1 || !selectedBatch2) return;
-                const journeyText = `第一阶段：${selectedBatch1.animal} ${selectedBatch1.trait}  →  第二阶段：${selectedBatch2.animal} ${selectedBatch2.trait}`;
-                const finalStyle = selectedBatch2;
-                cardEmoji.textContent = finalStyle.animal;
-                cardTrait.textContent = finalStyle.trait;
-                cardDesc.textContent = finalStyle.desc;
+
+                // 🔥 修复核心：两个阶段的选择平等展示，用"×"连接
+                const fusionHTML = `
+                    <div class="card-fusion-item">
+                        <span class="card-fusion-emoji">${selectedBatch1.animal}</span>
+                        <span class="card-fusion-trait">${selectedBatch1.trait}</span>
+                    </div>
+                    <span class="card-fusion-x">×</span>
+                    <div class="card-fusion-item">
+                        <span class="card-fusion-emoji">${selectedBatch2.animal}</span>
+                        <span class="card-fusion-trait">${selectedBatch2.trait}</span>
+                    </div>
+                `;
+                cardFusion.innerHTML = fusionHTML;
+
+                // 描述语融合两种特质
+                const fusedDesc = `你既有「${selectedBatch1.trait}」的底色，又带「${selectedBatch2.trait}」的光彩。${selectedBatch2.desc}`;
+                cardDesc.textContent = fusedDesc;
+
+                // 旅程记录
+                const journeyText = `第一阶段选择：${selectedBatch1.animal} ${selectedBatch1.trait}  →  第二阶段选择：${selectedBatch2.animal} ${selectedBatch2.trait}`;
                 cardJourney.textContent = journeyText;
+
                 cardNickname.textContent = '一位未来的好老师';
                 cardNickname.classList.remove('hidden');
+
                 document.querySelectorAll('#styleGrid, #generateBtn, #countdownArea, #stageLabel, #bottomTip').forEach(el => {
                     if (el) el.style.display = 'none';
                 });
@@ -503,7 +533,8 @@
                         logging: false,
                     });
                     const link = document.createElement('a');
-                    link.download = `教学风格罗盘_${selectedBatch2?.trait || '预见'}.png`;
+                    const fileName = `教学风格罗盘_${selectedBatch1?.trait || ''}×${selectedBatch2?.trait || '预见'}.png`;
+                    link.download = fileName;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                     saveBtn.textContent = '📸 保存图片';
